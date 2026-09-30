@@ -1,0 +1,1698 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Fonts: Mona Sans for the Page layer, Monaspace for the Source layer.
+   Subsetted variable fonts, self-hosted from /public/fonts.
+--------------------------------------------------------------------------- */
+
+@font-face {
+  font-family: "Mona Sans";
+  src: url("/fonts/mona-sans.woff2") format("woff2");
+  font-weight: 400 850;
+  font-stretch: 100% 125%;
+  font-style: normal;
+  font-display: block;
+  unicode-range: U+0020-007E, U+00A0, U+00A3, U+00A9, U+00AE, U+00B0, U+00B7, U+00D7, U+00DF,
+    U+00E0-00E1, U+00E4, U+00E7-00E9, U+00ED, U+00F1, U+00F3, U+00F6, U+00FA, U+00FC, U+2009,
+    U+2013-2014, U+2018-2019, U+201C-201D, U+2022, U+2026, U+2122, U+20AC, U+2212;
+}
+
+@font-face {
+  font-family: "Mona Sans";
+  src: url("/fonts/mona-sans-ext.woff2") format("woff2");
+  font-weight: 400 850;
+  font-stretch: 100% 125%;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+00A1-00A2, U+00A4-00A8, U+00AA-00AD, U+00AF, U+00B1-00B6, U+00B8-00D6,
+    U+00D8-00DE, U+00E2-00E3, U+00E5-00E6, U+00EA-00EC, U+00EE-00F0, U+00F2, U+00F4-00F5,
+    U+00F7-00F9, U+00FB, U+00FD-017F, U+201A, U+201E, U+2039-203A;
+}
+
+@font-face {
+  font-family: "Monaspace Neon";
+  src: url("/fonts/monaspace-neon.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: "Monaspace Radon";
+  src: url("/fonts/monaspace-radon.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ---------------------------------------------------------------------------
+   Tokens. All color on the site lives in the Source layer; the Page layer is
+   canvas, ink and slate. Dark theme swaps canvas and ink and turns the Source
+   layer light, so the lens always opens onto a different material.
+--------------------------------------------------------------------------- */
+
+@property --lens-r {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 100px;
+}
+
+/* Clip-path inputs are set every frame by the lens. Not inheriting keeps the
+   style invalidation to the layer itself instead of its whole subtree. */
+@property --x {
+  syntax: "<length-percentage>";
+  inherits: false;
+  initial-value: 50%;
+}
+@property --y {
+  syntax: "<length-percentage>";
+  inherits: false;
+  initial-value: 50%;
+}
+@property --r {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+:root {
+  color-scheme: light;
+
+  --canvas: #eef1f4;
+  --ink: #0e1726;
+  --slate: #5a6675;
+  --hairline: rgb(14 23 38 / 0.12);
+
+  --editor: #161b22;
+  --editor-raised: #21262d;
+  --code: #e6edf3;
+  --comment: #8b949e;
+  --gutter-ink: #7d8590;
+  --insp-margin: #f6b26b;
+  --insp-border: #ffe599;
+  --insp-padding: #93c47d;
+  --insp-content: #6fa8dc;
+  --fill-margin: rgb(246 178 107 / 0.26);
+  --fill-border: rgb(255 229 153 / 0.4);
+  --fill-padding: rgb(147 196 125 / 0.26);
+  --fill-content: rgb(111 168 220 / 0.2);
+  --guide: rgb(111 168 220 / 0.45);
+
+  --glass-fill: rgb(255 255 255 / 0.56);
+  --glass-rim: rgb(255 255 255 / 0.9);
+  --glass-edge: rgb(14 23 38 / 0.1);
+  --glass-shadow: 0 1px 2px rgb(14 23 38 / 0.06), 0 12px 32px -12px rgb(14 23 38 / 0.22);
+  --glass-light: rgb(255 255 255 / 1);
+
+  --maxw: 1200px;
+  --page-gutter: clamp(16px, 4vw, 48px);
+  --col-gap: clamp(16px, 2vw, 24px);
+  --section-space: clamp(96px, 12vw, 168px);
+  --lens-r: clamp(76px, 18vw, 100px);
+
+  --hero-size: clamp(2.5rem, 1.2rem + 6.2vw, 5.5rem);
+  --hero-pt: clamp(128px, 22vh, 208px);
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --glass-fill-dense: rgb(255 255 255 / 0.8);
+}
+
+/* Phones have no top bar (navigation is a bottom dock), so the hero starts higher. */
+@media (max-width: 767px) {
+  :root {
+    --hero-pt: clamp(72px, 11vh, 120px);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --canvas: #0e1726;
+    --ink: #eef1f4;
+    --slate: #94a0af;
+    --hairline: rgb(238 241 244 / 0.14);
+    --editor: #f6f8fa;
+    --editor-raised: #eaeef2;
+    --code: #1f2328;
+    --comment: #59636e;
+    --gutter-ink: #5f6873;
+    --insp-margin: #8f4800;
+    --insp-border: #715900;
+    --insp-padding: #2e6b1e;
+    --insp-content: #1e5e9e;
+    --fill-margin: rgb(246 178 107 / 0.42);
+    --fill-border: rgb(255 214 102 / 0.5);
+    --fill-padding: rgb(147 196 125 / 0.4);
+    --fill-content: rgb(111 168 220 / 0.3);
+    --guide: rgb(30 94 158 / 0.4);
+    --glass-fill: rgb(255 255 255 / 0.07);
+    --glass-rim: rgb(255 255 255 / 0.3);
+    --glass-edge: rgb(0 0 0 / 0.5);
+    --glass-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 16px 40px -12px rgb(0 0 0 / 0.6);
+    --glass-light: rgb(255 255 255 / 0.55);
+    --glass-fill-dense: rgb(24 33 50 / 0.86);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --canvas: #0e1726;
+  --ink: #eef1f4;
+  --slate: #94a0af;
+  --hairline: rgb(238 241 244 / 0.14);
+  --editor: #f6f8fa;
+  --editor-raised: #eaeef2;
+  --code: #1f2328;
+  --comment: #59636e;
+  --gutter-ink: #5f6873;
+  --insp-margin: #8f4800;
+  --insp-border: #715900;
+  --insp-padding: #2e6b1e;
+  --insp-content: #1e5e9e;
+  --fill-margin: rgb(246 178 107 / 0.42);
+  --fill-border: rgb(255 214 102 / 0.5);
+  --fill-padding: rgb(147 196 125 / 0.4);
+  --fill-content: rgb(111 168 220 / 0.3);
+  --guide: rgb(30 94 158 / 0.4);
+  --glass-fill: rgb(255 255 255 / 0.07);
+  --glass-rim: rgb(255 255 255 / 0.3);
+  --glass-edge: rgb(0 0 0 / 0.5);
+  --glass-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 16px 40px -12px rgb(0 0 0 / 0.6);
+  --glass-light: rgb(255 255 255 / 0.55);
+  --glass-fill-dense: rgb(24 33 50 / 0.86);
+}
+
+@theme inline {
+  --color-*: initial;
+  --color-canvas: var(--canvas);
+  --color-ink: var(--ink);
+  --color-slate: var(--slate);
+  --color-hairline: var(--hairline);
+  --color-editor: var(--editor);
+  --color-code: var(--code);
+  --color-comment: var(--comment);
+  --color-margin: var(--insp-margin);
+  --color-border: var(--insp-border);
+  --color-padding: var(--insp-padding);
+  --color-content: var(--insp-content);
+  --color-transparent: transparent;
+
+  --font-sans: "Mona Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Monaspace Neon", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-hand: "Monaspace Radon", "Monaspace Neon", ui-monospace, monospace;
+
+  --ease-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+--------------------------------------------------------------------------- */
+
+@layer base {
+  html {
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-optical-sizing: auto;
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: 96px;
+  }
+
+  body {
+    position: relative;
+    min-height: 100svh;
+    background: var(--canvas);
+    font-size: 1.125rem;
+    line-height: 1.6;
+    font-kerning: normal;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background: var(--ink);
+    color: var(--canvas);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  a {
+    color: inherit;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+
+  p,
+  li,
+  dd {
+    text-wrap: pretty;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:focus-within {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Type scale (Mona Sans, ratio 1.25 from an 18px body)
+--------------------------------------------------------------------------- */
+
+.t-hero,
+.t-display,
+.t-h2,
+.t-h3 {
+  font-family: var(--font-sans);
+  font-variant-ligatures: normal;
+  font-stretch: 112%;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  text-wrap: pretty;
+}
+
+.t-hero {
+  font-size: var(--hero-size);
+  line-height: 0.95;
+}
+
+.t-display {
+  font-size: clamp(3.25rem, 0.8rem + 10.6vw, 8.375rem);
+  line-height: 0.95;
+}
+
+.t-h2 {
+  font-size: clamp(2.25rem, 1.4rem + 3vw, 3.4375rem);
+  line-height: 0.95;
+}
+
+.t-h3 {
+  font-size: clamp(1.5rem, 1.2rem + 1vw, 1.75rem);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.t-lede {
+  font-size: clamp(1.25rem, 1.1rem + 0.6vw, 1.40625rem);
+  line-height: 1.45;
+}
+
+.t-small {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.measure {
+  max-width: 66ch;
+}
+
+/* ---------------------------------------------------------------------------
+   Layout: a 12-column grid, 1200px max, left-aligned content.
+--------------------------------------------------------------------------- */
+
+.wrap {
+  width: min(100% - 2 * var(--page-gutter), var(--maxw));
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--col-gap);
+}
+
+.skip-link {
+  position: fixed;
+  left: 16px;
+  top: 12px;
+  z-index: 100;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--canvas);
+  font-size: 0.9375rem;
+  font-weight: 550;
+  text-decoration: none;
+  transform: translateY(-160%);
+}
+
+.skip-link:focus-visible {
+  transform: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Layers. Every block renders a Page layer and a Source layer in the same
+   grid cell. The Source layer sits on top and is clipped to the lens.
+--------------------------------------------------------------------------- */
+
+.layered {
+  position: relative;
+  display: grid;
+  grid-template: minmax(0, auto) / minmax(0, 1fr);
+}
+
+.layered > .layer-page,
+.layered > .layer-source {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+
+.layer-source,
+.source-gutter {
+  clip-path: circle(var(--r) at var(--x) var(--y));
+  pointer-events: none;
+}
+
+.layer-source {
+  position: relative;
+  z-index: 1;
+  background: var(--editor);
+  color: var(--code);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 22px;
+  font-variant-ligatures: none;
+  overflow: clip;
+  -webkit-font-smoothing: antialiased;
+}
+
+.layer-source a {
+  pointer-events: auto;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+  text-underline-offset: 0.25em;
+}
+
+.layer-source a:hover {
+  text-decoration-color: currentColor;
+}
+
+html[data-view="source"] .layer-source,
+html[data-view="source"] .source-gutter,
+html[data-intro] .layer-source {
+  clip-path: none;
+}
+
+html[data-view="source"] .layer-source {
+  pointer-events: auto;
+}
+
+/* Without JavaScript the intro never runs, so show the page after a beat. */
+html[data-intro="pending"] .layer-source {
+  animation: intro-fallback 1ms 5s forwards;
+}
+
+@keyframes intro-fallback {
+  from,
+  to {
+    clip-path: circle(0px at 50% 50%);
+  }
+}
+
+/* Keep keyboard focus visible above the Source layer in Source view. */
+html[data-view="source"] .layer-page :focus-visible:not(.stretched-link) {
+  position: relative;
+  z-index: 2;
+}
+
+html[data-view="source"] .layer-page .stretched-link:focus-visible::after {
+  z-index: 2;
+}
+
+/* Reduced motion swaps the lens expansion for a crossfade. */
+html[data-view-fade="in"] .layer-source,
+html[data-view-fade="in"] .source-gutter {
+  clip-path: none;
+  animation: layer-fade-in 280ms var(--ease) both;
+}
+
+html[data-view-fade="out"] .layer-source,
+html[data-view-fade="out"] .source-gutter {
+  clip-path: none;
+  animation: layer-fade-out 280ms var(--ease) both;
+}
+
+@keyframes layer-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes layer-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* Faint line numbers down the left edge, visible in Source view. */
+.source-gutter {
+  position: absolute;
+  inset: 0 auto 0 0;
+  z-index: 2;
+  width: 44px;
+  overflow: hidden;
+  padding-top: 11px;
+  color: var(--gutter-ink);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 22px;
+  text-align: right;
+  white-space: pre;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+
+.source-gutter pre {
+  margin: 0;
+  padding-right: 12px;
+  font: inherit;
+}
+
+@media (max-width: 767px) {
+  .source-gutter {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Source layer contents: syntax colors come from the inspector overlay.
+--------------------------------------------------------------------------- */
+
+.tk-k {
+  color: var(--insp-margin);
+}
+.tk-s {
+  color: var(--insp-padding);
+}
+.tk-n {
+  color: var(--insp-border);
+}
+.tk-p {
+  color: var(--insp-content);
+}
+.tk-d {
+  color: var(--comment);
+}
+.tk-c {
+  color: var(--comment);
+  font-family: var(--font-hand);
+}
+
+.src-pre {
+  margin: 0;
+  font: inherit;
+  white-space: pre;
+  tab-size: 2;
+}
+
+.src-wrap {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.src-caption {
+  color: var(--comment);
+  font-family: var(--font-hand);
+}
+
+.src-panel {
+  background: var(--editor-raised);
+  border-radius: 6px;
+}
+
+.src-rule {
+  border-color: color-mix(in srgb, var(--comment) 40%, transparent);
+}
+
+/* ---------------------------------------------------------------------------
+   Glass. One material for everything that floats above the page.
+--------------------------------------------------------------------------- */
+
+.glass {
+  position: relative;
+  isolation: isolate;
+  background: var(--glass-fill);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  backdrop-filter: blur(18px) saturate(180%);
+  box-shadow:
+    0 0 0 1px var(--glass-edge),
+    inset 0 0 0 1px var(--glass-rim),
+    var(--glass-shadow);
+}
+
+/* The bright rim: a 1px ring whose highlight drifts toward the cursor. */
+.glass-spec {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  overflow: hidden;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+}
+
+.glass-spec > span {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: max(160px, 60%);
+  aspect-ratio: 2 / 1;
+  margin-left: calc(max(160px, 60%) / -2);
+  margin-top: calc(max(160px, 60%) / -4);
+  background: radial-gradient(closest-side, var(--glass-light), transparent);
+  will-change: transform;
+}
+
+/* ---------------------------------------------------------------------------
+   The lens: clear optical glass. No blur inside, a thin refractive rim,
+   a specular crescent, a faint chromatic fringe and a soft lifting shadow.
+--------------------------------------------------------------------------- */
+
+.lens {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 30;
+  width: 200px;
+  height: 200px;
+  margin: -100px 0 0 -100px;
+  border-radius: 50%;
+  pointer-events: none;
+  visibility: hidden;
+  /* Only transform here: opacity or will-change: opacity would make the lens
+     a backdrop root and leave the refraction filter nothing to bend. */
+  will-change: transform;
+}
+
+.lens-rest {
+  position: absolute;
+  z-index: 3;
+  left: var(--rest-x);
+  top: var(--rest-y);
+  width: calc(var(--lens-r) * 2);
+  height: calc(var(--lens-r) * 2);
+  translate: -50% -50%;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+html[data-lens="pointer"] .lens-rest,
+html[data-view="source"] .lens-rest,
+html[data-view-anim] .lens-rest,
+html[data-view-fade] .lens-rest {
+  visibility: hidden;
+}
+
+html[data-intro] .lens-rest {
+  opacity: 0;
+}
+
+@media (pointer: coarse) {
+  .lens-rest {
+    pointer-events: auto;
+    touch-action: none;
+    cursor: grab;
+  }
+}
+
+.lens-refract,
+.lens-rim,
+.lens-fringe,
+.lens-spec {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+
+.lens-refract {
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  -webkit-mask: radial-gradient(closest-side, transparent 86%, #000 91%, #000 100%);
+  mask: radial-gradient(closest-side, transparent 86%, #000 91%, #000 100%);
+}
+
+.lens-refract[data-optics="displace"] {
+  -webkit-backdrop-filter: var(--refraction);
+  backdrop-filter: var(--refraction);
+}
+
+.lens-rim {
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 0.85),
+    inset 0 0 0 2px rgb(14 23 38 / 0.1),
+    0 0 0 1px rgb(14 23 38 / 0.14),
+    0 22px 44px -18px rgb(14 23 38 / 0.5),
+    0 4px 10px -4px rgb(14 23 38 / 0.28);
+}
+
+.lens-fringe {
+  box-shadow:
+    inset 2px 0 2px -1px rgb(255 72 110 / 0.34),
+    inset -2px 0 2px -1px rgb(56 170 255 / 0.34),
+    inset 0 -2px 2px -1px rgb(255 214 90 / 0.22);
+}
+
+.lens-spec {
+  inset: 2px;
+  background: radial-gradient(110% 55% at 50% -14%, rgb(255 255 255 / 0.85) 0 20%, rgb(255 255 255 / 0) 40%);
+  -webkit-mask: radial-gradient(closest-side, transparent 84%, #000 96%);
+  mask: radial-gradient(closest-side, transparent 84%, #000 96%);
+}
+
+.lens-dot {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 31;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: #0e1726;
+  box-shadow: 0 0 0 1.5px rgb(255 255 255 / 0.95);
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform, opacity;
+  transition: scale 180ms var(--ease);
+}
+
+.lens-dot[data-link] {
+  scale: 2.25;
+  background: transparent;
+  box-shadow:
+    0 0 0 1px #0e1726,
+    inset 0 0 0 1px rgb(255 255 255 / 0.95);
+}
+
+.lens-rest .lens-dot-rest {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: #0e1726;
+  box-shadow: 0 0 0 1.5px rgb(255 255 255 / 0.95);
+}
+
+@media (pointer: fine) {
+  html[data-lens="pointer"]:not([data-view="source"]) [data-lens-target],
+  html[data-lens="pointer"]:not([data-view="source"]) [data-lens-target] *,
+  html[data-lens="pointer"]:not([data-view="source"]) .layer-source a,
+  html[data-peek],
+  html[data-peek] * {
+    cursor: none !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Box-model overlays, as drawn by the element inspector.
+--------------------------------------------------------------------------- */
+
+.bm-guides {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.bm-guides::before,
+.bm-guides::after {
+  content: "";
+  position: absolute;
+  border: 0 dashed var(--guide);
+}
+
+.bm-guides::before {
+  inset: 0 -100vw;
+  border-top-width: 1px;
+  border-bottom-width: 1px;
+}
+
+.bm-guides::after {
+  inset: -100vh 0;
+  border-left-width: 1px;
+  border-right-width: 1px;
+}
+
+.inspector-tip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: var(--editor-raised);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--comment) 35%, transparent);
+  font-size: 13px;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------------------
+   Browser-window frame around project screenshots.
+--------------------------------------------------------------------------- */
+
+.frame {
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.frame-bar {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 56px 1fr 56px;
+  align-items: center;
+  height: 40px;
+  padding-inline: 14px;
+}
+
+.frame-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.frame-dots i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--slate) 38%, transparent);
+}
+
+.frame-address {
+  justify-self: center;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 2px 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--canvas) 70%, transparent);
+  box-shadow: inset 0 0 0 1px var(--glass-edge);
+  color: var(--slate);
+  font-size: 0.8125rem;
+  line-height: 20px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.frame-shot {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 10;
+  background: color-mix(in srgb, var(--slate) 12%, var(--canvas));
+}
+
+.frame-shot img,
+.deferred-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.deferred-image {
+  position: absolute;
+  inset: 0;
+  display: block;
+  overflow: hidden;
+}
+
+.deferred-image img {
+  position: relative;
+}
+
+.deferred-blur {
+  position: absolute;
+  inset: -16px;
+  background-size: cover;
+  filter: blur(14px);
+}
+
+@media (max-width: 639px) {
+  .frame-bar {
+    height: 32px;
+    grid-template-columns: 44px 1fr 44px;
+    padding-inline: 10px;
+  }
+  .frame-address {
+    font-size: 0.75rem;
+    padding-inline: 10px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Links, buttons and small controls on the Page layer.
+--------------------------------------------------------------------------- */
+
+.link {
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+}
+
+.link:hover {
+  text-decoration-color: currentColor;
+}
+
+/* The whole row is the link. z-index 1 keeps it above the screenshot but
+   below the Source layer, which comes later in the document. */
+.stretched-link::after {
+  content: "";
+  position: absolute;
+  inset: -12px;
+  z-index: 1;
+  border-radius: 18px;
+}
+
+.stretched-link:focus-visible {
+  outline: none;
+}
+
+.stretched-link:focus-visible::after {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.keycap {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  color: var(--slate);
+  font-size: 0.75rem;
+  font-weight: 550;
+  line-height: 1;
+}
+
+/* ---------------------------------------------------------------------------
+   Experience graph: hovering a commit highlights its branch.
+--------------------------------------------------------------------------- */
+
+.graph-lane,
+.graph-node,
+.graph-row-text {
+  transition: opacity 180ms var(--ease);
+}
+
+.experience:has([data-branch-hover="main"]:hover) [data-branch]:not([data-branch="main"]),
+.experience:has([data-branch-hover="oss"]:hover) [data-branch]:not([data-branch="oss"]),
+.experience:has([data-branch-hover="freelance"]:hover) [data-branch]:not([data-branch="freelance"]) {
+  opacity: 0.28;
+}
+
+/* The Source layer's git log: lanes continue above and below each commit. */
+.log-lane {
+  position: absolute;
+  inset-block: 0;
+  width: 1ch;
+  overflow: hidden;
+  white-space: pre;
+}
+
+.log-lane::before {
+  content: "|\A|\A|\A|\A|\A|\A|\A|\A|\A|\A|\A|\A|\A|\A|\A|\A|\A|\A|\A|\A|\A|\A|\A|\A|\A|\A|\A|\A|\A|\A|\A|\A";
+}
+
+.log-lane-below {
+  top: 60px;
+}
+
+.log-lane-above {
+  bottom: auto;
+  height: 40px;
+}
+
+.log-commit {
+  position: absolute;
+  inset: 40px 0 auto;
+  display: block;
+  background: var(--editor);
+  /* Cover the tips of the lane glyphs above and below the line. */
+  box-shadow: 0 0 0 3px var(--editor);
+}
+
+/* ---------------------------------------------------------------------------
+   Contact headline: letters widen near the cursor, in fixed-width boxes.
+--------------------------------------------------------------------------- */
+
+.magnify-word {
+  white-space: nowrap;
+}
+
+[data-fixed] .magnify-letter {
+  display: inline-block;
+}
+
+/* ---------------------------------------------------------------------------
+   View transitions between the work list and case studies.
+--------------------------------------------------------------------------- */
+
+::view-transition {
+  pointer-events: none;
+}
+
+::view-transition-group(*) {
+  animation-duration: 480ms;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 320ms;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+html[data-nav-fade] main {
+  animation: page-fade-in 320ms var(--ease) both;
+}
+
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0s !important;
+  }
+
+  html[data-nav-fade] main {
+    animation-duration: 1ms;
+  }
+
+  .lens-dot {
+    transition: none;
+  }
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 16mm 16mm 18mm;
+  }
+
+  :root,
+  :root[data-theme="dark"] {
+    color-scheme: light;
+    --canvas: #fff;
+    --ink: #0e1726;
+    --slate: #4a5563;
+    --hairline: rgb(14 23 38 / 0.18);
+    --page-gutter: 0px;
+    --hero-pt: 0px;
+    --section-space: 0px;
+  }
+
+  html,
+  body {
+    background: #fff;
+    font-size: 10pt;
+    line-height: 1.45;
+  }
+
+  .layer-source,
+  .source-gutter,
+  .lens,
+  .lens-dot,
+  .lens-rest,
+  .skip-link,
+  .site-footer,
+  [data-site-nav],
+  [role="status"] {
+    display: none !important;
+  }
+
+  .resume .t-h2 {
+    font-size: 26pt;
+  }
+
+  .resume .t-h3 {
+    font-size: 13pt;
+  }
+
+  .resume .t-lede {
+    font-size: 12pt;
+  }
+
+  .resume-item {
+    break-inside: avoid;
+  }
+
+  a {
+    text-decoration: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Hero: the headline under inspection.
+--------------------------------------------------------------------------- */
+
+.hero {
+  --h1-pad: 8px;
+  --h1-mb: clamp(40px, 3.4vw, 48px);
+  --rest-x: max(calc((100% - min(100% - 2 * var(--page-gutter), var(--maxw))) / 2 + var(--hero-size) * 1.1), calc(var(--lens-r) + 12px));
+  --rest-y: calc(var(--hero-pt) + var(--hero-size) * 0.06);
+}
+
+html:not([data-lens="pointer"]):not([data-view="source"]):not([data-view-anim]) .hero > .layer-source {
+  --x: var(--rest-x);
+  --y: var(--rest-y);
+  --r: var(--lens-r);
+}
+
+.hero-title {
+  padding-block: var(--h1-pad);
+}
+
+h1.hero-title {
+  margin-bottom: var(--h1-mb);
+}
+
+.hint-touch {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  .hint-pointer {
+    display: none;
+  }
+  .hint-touch {
+    display: inline;
+  }
+}
+
+.hero-inspect {
+  position: relative;
+  margin-bottom: var(--h1-mb);
+}
+
+.bm-margin,
+.bm-padding,
+.bm-content,
+.bm-lines,
+.redline,
+.redline-note,
+.hero-secret,
+.box-model {
+  position: absolute;
+}
+
+.bm-margin {
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: var(--h1-mb);
+  background: var(--fill-margin);
+}
+
+.bm-padding {
+  inset: 0;
+  border-block: var(--h1-pad) solid var(--fill-padding);
+}
+
+.bm-content {
+  inset: var(--h1-pad) 0;
+  background: var(--fill-content);
+  font-size: var(--hero-size);
+}
+
+/* Baselines and cap lines of every line of the headline: Mona Sans sits its
+   baseline 0.86em into a 0.95em line box, with a 0.729em cap height. */
+.bm-lines {
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0 calc(0.86em - 1px),
+      color-mix(in srgb, var(--insp-margin) 70%, transparent) calc(0.86em - 1px) 0.86em,
+      transparent 0.86em 0.95em
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0 0.131em,
+      color-mix(in srgb, var(--insp-content) 55%, transparent) 0.131em calc(0.131em + 1px),
+      transparent calc(0.131em + 1px) 0.95em
+    );
+}
+
+/* The headline's JSX, set so each line sits on the headline's own baseline. */
+.hero-code {
+  position: absolute;
+  inset: 0 0 auto 0;
+  padding-top: calc(var(--hero-size) * 0.27325);
+  font-size: calc(var(--hero-size) * 0.3);
+  line-height: calc(var(--hero-size) * 0.95);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.hero-secret {
+  left: 0;
+  right: 0;
+  top: calc(100% + var(--h1-mb) / 2);
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  translate: 0 -50%;
+}
+
+@media (max-width: 639px) {
+  .hero-secret {
+    font-size: 11.5px;
+    line-height: 17px;
+  }
+}
+
+.hero-secret {
+  color: var(--code);
+}
+
+.hero-secret a {
+  color: var(--insp-padding);
+  font-family: var(--font-mono);
+}
+
+.redline {
+  right: 0;
+  width: 10px;
+  border-right: 1px solid var(--insp-margin);
+}
+
+.redline::before,
+.redline::after {
+  content: "";
+  position: absolute;
+  right: -5px;
+  width: 9px;
+  border-top: 1px solid var(--insp-margin);
+}
+
+.redline::before {
+  top: 0;
+}
+
+.redline::after {
+  bottom: 0;
+}
+
+.redline-lh {
+  top: var(--h1-pad);
+  height: calc(var(--hero-size) * 0.95);
+}
+
+.redline-cap {
+  top: calc(var(--h1-pad) + var(--hero-size) * (0.95 + 0.131));
+  height: calc(var(--hero-size) * 0.729);
+}
+
+.redline-label,
+.redline-note {
+  color: var(--insp-margin);
+  font-family: var(--font-hand);
+  font-size: 13px;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.redline-label {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  translate: 0 -50%;
+}
+
+.redline-note {
+  right: 18px;
+  top: calc(var(--h1-pad) + var(--hero-size) * (0.95 * 3 + 0.5));
+  translate: 0 -50%;
+}
+
+.measure-value {
+  transition: opacity 180ms var(--ease);
+}
+
+.layer-source:not([data-measured]) .measure-value {
+  opacity: 0;
+}
+
+@media (max-width: 1023px) {
+  .redline,
+  .redline-note,
+  .box-model {
+    display: none;
+  }
+}
+
+/* The Computed pane's box-model diagram, for the same element. */
+.box-model {
+  right: 0;
+  top: calc(100% + var(--h1-mb) + 12px);
+  width: min(360px, 42%);
+  font-size: 11px;
+  line-height: 16px;
+  text-align: center;
+  color: var(--code);
+}
+
+.box-model-margin,
+.box-model-border,
+.box-model-padding,
+.box-model-content {
+  position: relative;
+  padding: 16px 20px;
+  border: 1px dashed color-mix(in srgb, var(--code) 35%, transparent);
+}
+
+.box-model-margin {
+  background: var(--fill-margin);
+}
+
+.box-model-border {
+  background: var(--fill-border);
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--code) 55%, transparent);
+}
+
+.box-model-padding {
+  background: var(--fill-padding);
+}
+
+.box-model-content {
+  padding: 6px 8px;
+  background: var(--fill-content);
+  border-style: solid;
+}
+
+.box-model-name {
+  position: absolute;
+  left: 6px;
+  top: 1px;
+  color: var(--comment);
+}
+
+.box-model-top,
+.box-model-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+}
+
+.box-model-top {
+  top: 1px;
+}
+
+.box-model-bottom {
+  bottom: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Navigation: a floating frosted pill, a bottom dock on phones.
+--------------------------------------------------------------------------- */
+
+.site-nav {
+  position: fixed;
+  inset: 16px 0 auto;
+  z-index: 40;
+  display: flex;
+  justify-content: center;
+  padding-inline: 12px;
+  pointer-events: none;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  height: 52px;
+  padding: 0 8px 0 22px;
+  border-radius: 999px;
+  pointer-events: auto;
+}
+
+.nav-name {
+  margin-right: 14px;
+  font-size: 0.9375rem;
+  font-stretch: 106%;
+  font-weight: 620;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  gap: 2px;
+}
+
+.nav-link {
+  position: relative;
+  display: block;
+  padding: 7px 14px;
+  border-radius: 999px;
+  color: var(--slate);
+  font-size: 0.9375rem;
+  line-height: 22px;
+  text-decoration: none;
+}
+
+.nav-link:hover,
+.nav-link[aria-current] {
+  color: var(--ink);
+}
+
+.nav-marker {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: var(--marker-fill, rgb(255 255 255 / 0.75));
+  box-shadow:
+    inset 0 0 0 1px var(--glass-rim),
+    0 0 0 1px var(--glass-edge),
+    0 1px 3px rgb(14 23 38 / 0.1);
+}
+
+:root[data-theme="dark"] .nav-marker {
+  --marker-fill: rgb(255 255 255 / 0.12);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .nav-marker {
+    --marker-fill: rgb(255 255 255 / 0.12);
+  }
+}
+
+.nav-divider {
+  width: 1px;
+  height: 20px;
+  margin-inline: 10px 4px;
+  background: var(--hairline);
+}
+
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-size: 0.9375rem;
+  line-height: 22px;
+  cursor: pointer;
+}
+
+.switch-track {
+  position: relative;
+  flex: none;
+  width: 34px;
+  height: 20px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ink) 40%, transparent);
+}
+
+.switch-thumb {
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--ink);
+  transition: transform 240ms var(--ease);
+}
+
+.switch[aria-checked="true"] .switch-track {
+  background: var(--ink);
+  box-shadow: none;
+}
+
+.switch[aria-checked="true"] .switch-thumb {
+  transform: translateX(14px);
+  background: var(--canvas);
+}
+
+.switch-tip {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 14px);
+  z-index: 1;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--ink);
+  color: var(--canvas);
+  font-size: 0.8125rem;
+  line-height: 18px;
+  white-space: nowrap;
+  opacity: 0;
+  translate: -50% -4px;
+  pointer-events: none;
+  transition:
+    opacity 180ms var(--ease),
+    translate 180ms var(--ease);
+}
+
+.switch:hover + .switch-tip,
+.switch:focus-visible + .switch-tip {
+  opacity: 1;
+  translate: -50% 0;
+  transition-delay: 350ms;
+}
+
+.switch:focus-visible + .switch-tip {
+  transition-delay: 0ms;
+}
+
+.palette-hint {
+  margin-left: 2px;
+  padding: 6px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.palette-hint:hover .keycap {
+  color: var(--ink);
+}
+
+@media (max-width: 767px) {
+  .site-nav {
+    inset: auto 0 max(12px, env(safe-area-inset-bottom));
+    padding-inline: 8px;
+  }
+  .nav {
+    height: 56px;
+    padding: 0 6px;
+  }
+  .nav-name,
+  .palette-hint,
+  .switch-tip {
+    display: none;
+  }
+  .nav-link {
+    padding: 8px clamp(7px, 2.4vw, 12px);
+    font-size: 0.875rem;
+  }
+  .nav-divider {
+    margin-inline: 4px 2px;
+  }
+  .switch {
+    padding: 8px 8px 8px 6px;
+    gap: 6px;
+  }
+  .switch-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .switch-track::before {
+    content: "";
+    position: absolute;
+    right: calc(100% + 6px);
+    top: 3px;
+    width: 14px;
+    height: 14px;
+    background: currentColor;
+    -webkit-mask: var(--code-icon) center / contain no-repeat;
+    mask: var(--code-icon) center / contain no-repeat;
+  }
+  .switch {
+    padding-left: 26px;
+  }
+}
+
+:root {
+  --code-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M5.5 4 1.5 8l4 4M10.5 4l4 4-4 4' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+/* In Source view the floating glass sits over the Source material, so it takes
+   that material's colors: dark glass on the dark editor, light on the light. */
+html[data-view="source"] .nav,
+html[data-view="source"] .toast {
+  --ink: var(--code);
+  --slate: var(--comment);
+  --canvas: var(--editor);
+  --hairline: color-mix(in srgb, var(--code) 16%, transparent);
+  --glass-fill: color-mix(in srgb, var(--editor) 80%, transparent);
+  --glass-rim: color-mix(in srgb, var(--code) 16%, transparent);
+  --glass-edge: color-mix(in srgb, var(--code) 20%, transparent);
+  --marker-fill: color-mix(in srgb, var(--code) 12%, transparent);
+  color: var(--ink);
+}
+
+/* ---------------------------------------------------------------------------
+   Command palette and the copy button
+--------------------------------------------------------------------------- */
+
+.palette {
+  background: var(--glass-fill-dense);
+  width: min(560px, calc(100% - 32px));
+  max-width: none;
+  margin: min(16vh, 140px) auto auto;
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  color: var(--ink);
+  overflow: hidden;
+}
+
+.palette::backdrop {
+  background: rgb(14 23 38 / 0.18);
+}
+
+.palette[open] {
+  animation: palette-in 200ms var(--ease) both;
+}
+
+@keyframes palette-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.985);
+  }
+}
+
+.palette-input {
+  display: block;
+  width: 100%;
+  height: 58px;
+  padding: 0 20px;
+  border: 0;
+  border-bottom: 1px solid var(--hairline);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 1.0625rem;
+  outline: none;
+}
+
+.palette-input:focus-visible {
+  border-bottom-color: color-mix(in srgb, var(--ink) 45%, transparent);
+}
+
+.palette-input::placeholder {
+  color: var(--slate);
+}
+
+.palette-list {
+  max-height: min(420px, 60vh);
+  overflow-y: auto;
+  padding: 8px;
+  overscroll-behavior: contain;
+}
+
+.palette-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 1rem;
+  line-height: 22px;
+  cursor: pointer;
+}
+
+.palette-option[aria-selected="true"] {
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+}
+
+.palette-empty {
+  padding: 4px 20px 20px;
+  color: var(--slate);
+}
+
+.toast {
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.copy-email {
+  cursor: pointer;
+  transition: transform 180ms var(--ease);
+}
+
+.copy-email:active {
+  transform: scale(0.985);
+}
+
+[tabindex="-1"]:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Case studies
+--------------------------------------------------------------------------- */
+
+.pk {
+  font-weight: 600;
+}
+
+.pc {
+  color: var(--slate);
+}
+
+.page-code {
+  font-size: 0.9375rem;
+  line-height: 24px;
+  font-stretch: 100%;
+  white-space: pre;
+  tab-size: 2;
+}
+
+.source-code {
+  font-size: 13.5px;
+  line-height: 24px;
+  white-space: pre;
+  tab-size: 2;
+}
+
+.code-panel {
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+
+.diagram-scroll {
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.diagram-scroll > * {
+  min-width: 560px;
+}
